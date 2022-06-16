@@ -9,6 +9,7 @@ import time
 option = webdriver.ChromeOptions()
 option.add_argument('headless')
 option.add_argument('window-size=1920x1080')
+option.add_argument("--incognito")
 
 # Configs
 chrome_driver = "./chromedriver"
