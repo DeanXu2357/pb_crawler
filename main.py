@@ -3,8 +3,28 @@
 from re import sub
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
+from datetime import datetime
+from threading import Timer
 import os
 import time
+
+def execute(driver, productUrl, quantity):
+    print(datetime.now())
+    print(productUrl)
+    print(quantity)
+    # redirect to product
+    driver.get(productUrl)
+
+    # select quantity
+    countSelect = Select(driver.find_element_by_xpath("/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/ul/li/div/select"))
+    countSelect.select_by_value(quantity)
+
+    # add to cart
+    submitBtn = driver.find_element_by_xpath("/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/div/button")
+    submitBtn.click()
+
+    driver.get_screenshot_as_file("capture.png")
+
 
 option = webdriver.ChromeOptions()
 option.add_argument('headless')
@@ -16,6 +36,7 @@ chrome_driver = "./chromedriver"
 account = ""
 pwd = ""
 productUrl = "https://p-bandai.com/tw/item/N2631684001001"
+quantity = "2"
 
 # open product page
 driver = webdriver.Chrome(chrome_options=option, executable_path=chrome_driver)
@@ -33,15 +54,11 @@ pwdElem.send_keys(pwd)
 submitLoginBtn = driver.find_element_by_xpath("/html/body/div[1]/div/main/section/form/div[2]/div[1]/section/div[2]/div[2]/button/a")
 submitLoginBtn.click()
 
-# redirect to product
-driver.get(productUrl)
+now = datetime.now()
+nt = now.timestamp()
 
-# select quantity
-countSelect = Select(driver.find_element_by_xpath("/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/ul/li/div/select"))
-countSelect.select_by_value("2")
+targetTime = datetime.strptime('2022-07-13', "%Y-%m-%d").replace(hour=11, minute=13)
+tt = targetTime.timestamp()
 
-# add to cart
-submitBtn = driver.find_element_by_xpath("/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/div/button")
-submitBtn.click()
-
-driver.get_screenshot_as_file("capture.png")
+t = Timer(tt-nt, execute, [driver, productUrl, quantity])
+t.start()
