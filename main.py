@@ -23,6 +23,8 @@ def execute(driver, productUrl, quantity):
     submitBtn = driver.find_element_by_xpath("/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/div/button")
     submitBtn.click()
 
+    time.sleep(2)
+
     driver.get_screenshot_as_file("capture.png")
 
 
