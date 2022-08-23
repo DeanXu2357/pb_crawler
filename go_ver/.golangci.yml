@@ -133,10 +133,6 @@ linters-settings:
     # switch
     default-signifies-exhaustive: false
 
-  exhaustivestruct:
-    struct-patterns:
-      - 'github.com/powerman/go-service-example/internal/config.[A-Z]*Config'
-
   forbidigo:
     # Forbid the following identifiers
     forbid:
@@ -223,7 +219,7 @@ linters-settings:
       #skipTestFuncs: true
       ruleguard:
         # path to a gorules file for the ruleguard checker
-        rules: 'build/gorules/rules.go' # Run `golangci-lint cache clean` when it changes!
+#        rules: 'build/gorules/rules.go' # Run `golangci-lint cache clean` when it changes!
       truncateCmp:
         # whether to skip int/uint/uintptr types (default true)
         skipArchDependent: false
