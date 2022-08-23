@@ -1,3 +1,5 @@
 chromedriver
 /go_ver/vendor/
 /go_ver/.pb_crawler.yaml
+capture.png
+/go_ver/screen_shot.png
