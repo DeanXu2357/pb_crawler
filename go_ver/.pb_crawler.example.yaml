@@ -1,0 +1,8 @@
+account: ""
+password: ""
+
+chromedriver: "/home/dean/workspace/mine/pb_crawler/chromedriver"
+port: 8888
+
+productUrl: "https://p-bandai.com/tw/item/N2620845001001"
+quantity: 1
