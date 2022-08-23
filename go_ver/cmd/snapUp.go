@@ -7,17 +7,19 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/tebeka/selenium"
-	"github.com/tebeka/selenium/chrome"
 	"image"
 	"image/png"
 	"os"
 	"pb_crawler/config"
 	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/tebeka/selenium"
+	"github.com/tebeka/selenium/chrome"
+	"pb_crawler/config"
 )
 
-// snapUpCmd represents the snapUp command
+// snapUpCmd represents the snapUp command.
 var snapUpCmd = &cobra.Command{
 	Use:   "snapUp [time string]",
 	Short: "",
@@ -53,12 +55,9 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 		return errors.New("time string expired")
 	}
 
-	//selenium.SetDebug(true)
 	service, err := selenium.NewChromeDriverService(
 		cfg.Chromedriver,
 		cfg.Port,
-		//selenium.StartFrameBuffer(), // Start an X frame buffer for the browser to run in.
-		//selenium.Output(os.Stderr), // Output debug information to STDERR.
 	)
 	if err != nil {
 		return err
@@ -69,7 +68,7 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 	caps.AddChrome(chrome.Capabilities{Args: []string{
 		"--window-size=1920,1080",
 		"--start-maximized",
-		//"--headless",
+		// "--headless",
 		"--no-sandbox",
 		"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7",
 	}})
