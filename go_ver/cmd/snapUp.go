@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 Dean Hsu dean.xu.2357@gmail.com
-
 */
 package cmd
 
@@ -50,7 +49,7 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if executeTime.After(time.Now()) {
+	if time.Now().After(executeTime) {
 		return errors.New("time string expired")
 	}
 
@@ -70,7 +69,7 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 	caps.AddChrome(chrome.Capabilities{Args: []string{
 		"--window-size=1920,1080",
 		"--start-maximized",
-		"--headless",
+		//"--headless",
 		"--no-sandbox",
 		"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7",
 	}})
@@ -107,7 +106,34 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 	if err3 != nil {
 		return fmt.Errorf("find quantity select error: %w", err3)
 	}
-	quantitySelect.
+	if err3 := quantitySelect.Click(); err3 != nil {
+		return fmt.Errorf("click quantity select error: %w", err3)
+	}
+	qSelect, err4 := wd.FindElement(selenium.ByXPATH, fmt.Sprintf("/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/ul/li/div/select/option[%d]", cfg.Quantity))
+	if err4 != nil {
+		return fmt.Errorf("find select option error: %w", err4)
+	}
+	if err4 := qSelect.Click(); err4 != nil {
+		return fmt.Errorf("click select option error: %w", err4)
+	}
+
+	time.Sleep(1 * time.Second)
+	addToCartBtn, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/div/button")
+	if err != nil {
+		return fmt.Errorf("find cart btn error: %w", err)
+	}
+	if err := addToCartBtn.Click(); err != nil {
+		return fmt.Errorf("click cart btn error: %w", err)
+	}
+
+	time.Sleep(1 * time.Second)
+	toCart, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[4]/div[1]/div[2]/div[2]/div[1]/div/div/div/div[2]/div[3]/a")
+	if err != nil {
+		return fmt.Errorf("find to cart error: %w", err)
+	}
+	if err := toCart.Click(); err != nil {
+		return fmt.Errorf("client to cart error: %w", err)
+	}
 
 	pic, err := wd.Screenshot()
 	if err != nil {
