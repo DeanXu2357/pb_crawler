@@ -1,3 +1,4 @@
 chromedriver
 ./go_ver/vendor
 ./go_ver/.pb_crawler.yaml
+/go_ver/vendor/
