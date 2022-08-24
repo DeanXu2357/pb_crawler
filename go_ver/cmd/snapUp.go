@@ -10,7 +10,6 @@ import (
 	"image"
 	"image/png"
 	"os"
-	"pb_crawler/config"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -22,23 +21,15 @@ import (
 // snapUpCmd represents the snapUp command.
 var snapUpCmd = &cobra.Command{
 	Use:   "snapUp [time string]",
-	Short: "",
-	Long:  ``,
+	Short: "於指定時間搶購商品",
+	Long:  `於指定時間搶購商品。時間格式為 "YYYY-MM-DD hh:mm:ss 時區(+8)"`,
 	RunE:  snapUpRun,
 }
 
 func init() {
 	rootCmd.AddCommand(snapUpCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// snapUpCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// snapUpCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	snapUpCmd.Flags().BoolP("checkout", "c", false, "是否印出超商付款")
 }
 
 func snapUpRun(cmd *cobra.Command, args []string) error {
@@ -46,12 +37,12 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 
 	cfg := config.New()
 
-	executeTime, err := time.Parse("2006-01-02 15:04:05", args[0])
+	executeTime, err := time.Parse("2006-01-02 15:04:05 -07", args[0])
 	if err != nil {
 		return err
 	}
 
-	if time.Now().After(executeTime) {
+	if time.Now().Local().After(executeTime) {
 		return errors.New("time string expired")
 	}
 
@@ -68,8 +59,9 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 	caps.AddChrome(chrome.Capabilities{Args: []string{
 		"--window-size=1920,1080",
 		"--start-maximized",
-		// "--headless",
+		"--headless",
 		"--no-sandbox",
+		"--incognito",
 		"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7",
 	}})
 	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://127.0.0.1:%d/wd/hub", cfg.Port))
@@ -95,7 +87,11 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("blocking")
-	time.After(time.Until(executeTime))
+	timer := time.NewTimer(time.Until(executeTime))
+	defer timer.Stop()
+	<-timer.C
+
+	fmt.Printf("execute... %s\n", time.Now().String())
 
 	if err2 := wd.Get(cfg.ProductUrl); err2 != nil {
 		return fmt.Errorf("to page (%s), error: %w", cfg.ProductUrl, err2)
@@ -116,7 +112,6 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("click select option error: %w", err4)
 	}
 
-	time.Sleep(1 * time.Second)
 	addToCartBtn, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[1]/div/main/section/section[1]/div[1]/div[2]/form/div/button")
 	if err != nil {
 		return fmt.Errorf("find cart btn error: %w", err)
@@ -125,13 +120,29 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("click cart btn error: %w", err)
 	}
 
-	time.Sleep(1 * time.Second)
-	toCart, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[4]/div[1]/div[2]/div[2]/div[1]/div/div/div/div[2]/div[3]/a")
-	if err != nil {
-		return fmt.Errorf("find to cart error: %w", err)
+	if err := wd.WaitWithTimeoutAndInterval(func(wd selenium.WebDriver) (bool, error) {
+		toCart, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[4]/div[1]/div[2]/div[2]/div[1]/div/div/div/div[2]/div[3]/a")
+		if err != nil {
+			return false, nil
+		}
+
+		return toCart.IsDisplayed()
+	}, 5*time.Second, 500*time.Millisecond); err != nil {
+		return fmt.Errorf("waitWithTimeoutAndInterval error: %w", err)
 	}
-	if err := toCart.Click(); err != nil {
-		return fmt.Errorf("client to cart error: %w", err)
+
+	checkout, err2 := cmd.Flags().GetBool("checkout")
+	if err2 != nil {
+		return fmt.Errorf("get flag error : %w", err2)
+	}
+	if checkout {
+		toCart, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[4]/div[1]/div[2]/div[2]/div[1]/div/div/div/div[2]/div[3]/a")
+		if err != nil {
+			return fmt.Errorf("find to cart error: %w", err)
+		}
+		if err := toCart.Click(); err != nil {
+			return fmt.Errorf("client to cart error: %w", err)
+		}
 	}
 
 	pic, err := wd.Screenshot()
@@ -152,19 +163,33 @@ func picToFile(pic []byte) error {
 		return fmt.Errorf("image decode error: %w", err)
 	}
 
-	f, err := os.Create("screen_shot.png")
+	file, err := os.Create("screen_shot.png")
 	if err != nil {
 		return fmt.Errorf("f create : %w", err)
 	}
-	defer f.Close()
+	defer file.Close()
 
-	if err := png.Encode(f, img); err != nil {
+	if err := png.Encode(file, img); err != nil {
 		return err
 	}
 	return nil
 }
 
 func loginFlow(wd selenium.WebDriver, c *config.Config) error {
+	if err := wd.WaitWithTimeoutAndInterval(
+		func(wd selenium.WebDriver) (bool, error) {
+			accountInput, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[1]/div/main/section/form/div[2]/div[1]/section/div[2]/div[1]/div[1]/div[2]/label/input")
+			if err != nil {
+				return false, nil
+			}
+			return accountInput.IsDisplayed()
+		},
+		5*time.Second,
+		300*time.Millisecond,
+	); err != nil {
+		return err
+	}
+
 	accountInput, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[1]/div/main/section/form/div[2]/div[1]/section/div[2]/div[1]/div[1]/div[2]/label/input")
 	if err != nil {
 		return fmt.Errorf("find accountInput input error: %w", err)
