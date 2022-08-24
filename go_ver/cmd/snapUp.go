@@ -136,12 +136,20 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get flag error : %w", err2)
 	}
 	if checkout {
-		toCart, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[4]/div[1]/div[2]/div[2]/div[1]/div/div/div/div[2]/div[3]/a")
-		if err != nil {
-			return fmt.Errorf("find to cart error: %w", err)
+		toCart, err5 := wd.FindElement(selenium.ByXPATH, "/html/body/div[4]/div[1]/div[2]/div[2]/div[1]/div/div/div/div[2]/div[3]/a")
+		if err5 != nil {
+			return fmt.Errorf("find to cart error: %w", err5)
 		}
-		if err := toCart.Click(); err != nil {
-			return fmt.Errorf("client to cart error: %w", err)
+		if err6 := toCart.Click(); err6 != nil {
+			return fmt.Errorf("client to cart error: %w", err6)
+		}
+
+		checkoutBtn, err := wd.FindElement(selenium.ByXPATH, "/html/body/div[1]/div/main/section/section/div[2]/div[4]/div/div[1]/a")
+		if err != nil {
+			return fmt.Errorf("find checkout btn error: %w", err)
+		}
+		if err := checkoutBtn.Click(); err != nil {
+			return fmt.Errorf("checkout click error: %w", err)
 		}
 	}
 
@@ -150,8 +158,8 @@ func snapUpRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("screen shot error : %w", err)
 	}
 
-	if err2 := picToFile(pic); err2 != nil {
-		return err2
+	if err := picToFile(pic); err != nil {
+		return err
 	}
 
 	return nil
