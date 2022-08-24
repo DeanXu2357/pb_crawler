@@ -4,7 +4,7 @@
 # options for analysis running
 run:
   # default concurrency is a available CPU number
-  #concurrency: 4
+  concurrency: 2
 
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   #timeout: 1m
@@ -13,7 +13,7 @@ run:
   #issues-exit-code: 1
 
   # include test files or not, default is true
-  #tests: true
+  tests: false
 
   # list of build tags, all linters use it. Default is empty list.
 #  build-tags:
@@ -361,7 +361,7 @@ linters-settings:
 
   gosimple:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.16"
+    go: "1.18"
 
   govet:
     # report about shadowed variables
@@ -509,11 +509,11 @@ linters-settings:
 
   staticcheck:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.16"
+    go: "1.18"
 
   stylecheck:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.16"
+    go: "1.18"
 
   tagliatelle:
     # check the struck tag name case
@@ -559,7 +559,7 @@ linters-settings:
 
   unused:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.16"
+    go: "1.18"
 
   whitespace:
     multi-if: false   # Enforces newlines (or comments) after every multi-line if statement
@@ -623,6 +623,15 @@ linters:
     - scopelint # deprecated
     - wrapcheck # enable after implementing https://github.com/tomarrell/wrapcheck/issues/1
     - wsl # questionable
+    - varnamelen
+    - exhaustruct
+    - stylecheck
+    - gochecknoinits
+    - exhaustivestruct
+    - gochecknoglobals
+    - gofumpt
+    - gofmt
+    - goimports
   #disable-all: false
   #presets:
   #  - bugs
@@ -650,7 +659,6 @@ issues:
         - forcetypeassert
         - funlen
         - gochecknoglobals
-        - gochecknoinits
         - goconst
         - gocyclo
         - gosec
