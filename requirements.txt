@@ -1,0 +1,7 @@
+selenium>=4.0.0
+playwright>=1.30.0
+pytest>=7.0.0
+pytest-asyncio>=0.20.0
+
+# After installing requirements, run:
+# python -m playwright install chromium

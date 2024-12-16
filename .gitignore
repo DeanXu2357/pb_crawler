@@ -3,3 +3,15 @@ chromedriver
 /go_ver/.pb_crawler.yaml
 capture.png
 /go_ver/screen_shot.png
+.idea/
+.venv/
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+.pypirc
